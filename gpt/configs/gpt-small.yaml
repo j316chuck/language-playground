@@ -1,0 +1,10 @@
+data:
+  batch_size: 16
+model:  
+  vocab_size: 50257
+  embed_dim: 768
+  block_size: 1024
+  dropout: 0.2
+optimization:
+  device: cuda:0
+  run_name: 02-01-day-1-gpt-small-sgd-dropout-0.2
