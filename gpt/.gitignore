@@ -1,17 +1,6 @@
-*bin
-*txt
-*bin
-*txt
-*bin
-*txt
-*bin
-*txt
-*bin
-*txt
-*bin
-*txt
-*bin
-*txt
+__pycache__/
+wandb/
+out/
 *bin
 *txt
 
