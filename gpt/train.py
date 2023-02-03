@@ -18,11 +18,11 @@ optimization_args = args.get("optimization", {})
 device = optimization_args.get("device", "cuda:0")
 
 # Load dataset
-dataset = "shakespeare"
+dataset = data_args.get("dataset", "shakespeare")
 train_file = os.path.join(os.path.dirname(__file__), "data", dataset, "train.bin")
 val_file = os.path.join(os.path.dirname(__file__), "data", dataset, "val.bin")
-train_data = np.memmap(train_file, mode='r', dtype='uint16')
-val_data = np.memmap(val_file, mode='r', dtype='uint16')
+train_data = np.memmap(train_file, mode='r', dtype=np.uint16)
+val_data = np.memmap(val_file, mode='r', dtype=np.uint16)
 
 # init wandb
 wandb_project = 'gpt'
@@ -61,7 +61,7 @@ def estimate_loss(model, eval_iters=100):
 
 # set up optimization loop
 iter_num = 0
-learning_rate = 3e-4
+learning_rate = float(optimization_args.get("lr", 3e-4))
 max_iters = 4000000
 eval_interval = 100
 out_dir = "./out/"
@@ -70,7 +70,7 @@ best_loss = 1e9
 model = GPT(**model_args)
 model.to(device)
 model.train()
-optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 start_time = time.time()
 while True: 
@@ -88,6 +88,8 @@ while True:
         wandb.log({
             'iter' : iter_num,
             'val' : losses['val'],
+            'best_val' : best_loss,
+            'num_parameters' : model.n_params,
             'train' : losses['train'], 
             'num_tokens' : batch_size * block_size * iter_num,
             'time' : time.time() - start_time,

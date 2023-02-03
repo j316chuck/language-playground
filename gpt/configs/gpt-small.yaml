@@ -1,5 +1,6 @@
 data:
   batch_size: 16
+  dataset: openwebtext
 model:  
   vocab_size: 50257
   embed_dim: 768
@@ -7,4 +8,5 @@ model:
   dropout: 0.2
 optimization:
   device: cuda:0
-  run_name: 02-01-day-1-gpt-small-sgd-dropout-0.2
+  lr: 3e-4
+  run_name: 2023-02-02-day-2-gpt-small-openwebtext-adam-dropout-0.2
