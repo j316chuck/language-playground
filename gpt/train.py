@@ -6,7 +6,7 @@ import yaml
 import wandb
 import time
 
-from model import GPT
+from model import GPT, GPTConfig
 
 # Get arguments
 args = yaml.safe_load(open(sys.argv[1], 'r'))
@@ -67,29 +67,33 @@ eval_interval = 100
 out_dir = "./out/"
 best_loss = 1e9
 
-model = GPT(**model_args)
+
+model_config = GPTConfig(**model_args)
+model = GPT(model_config)
 model.to(device)
 model.train()
 optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
 start_time = time.time()
-while True: 
+while iter_num < max_iters: 
+    # forward pass
     x, y = get_batch('train')
     logits, loss = model(x, y)
-    # Backpropagation
+    # backward pass
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
     
     # logging for eval
+    iter_num += 1            
     if iter_num % eval_interval == 0:
         losses = estimate_loss(model)
-        print(f"Iter: {iter_num}, Time: {time.time() - start_time} secs, num tokens {batch_size * block_size * iter_num}, train_loss: {losses['train']} val_loss: {losses['val']}")
+        print(f"Iter: {iter_num}, Time: {time.time() - start_time:.2f} secs, num tokens {batch_size * block_size * iter_num}, train_loss: {losses['train']} val_loss: {losses['val']}")
         wandb.log({
             'iter' : iter_num,
             'val' : losses['val'],
             'best_val' : best_loss,
-            'num_parameters' : model.n_params,
+            'num_parameters' : model.get_num_params(),
             'train' : losses['train'], 
             'num_tokens' : batch_size * block_size * iter_num,
             'time' : time.time() - start_time,
@@ -98,8 +102,4 @@ while True:
         if losses['val'] < best_loss:
             best_loss = losses['val']
             torch.save(model, os.path.join(out_dir, f"{run_name}-gpt-{iter_num}.ckpt"))
-
-    iter_num += 1            
-    if iter_num >= max_iters: 
-        break
     
