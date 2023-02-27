@@ -6,7 +6,7 @@ Loosely reproduced the GPT-2 loss curves on [openwebtext](https://huggingface.co
 
 Loss Curve:
 
-![Training Curves](./gpt_val_loss.png)
+![Training Curves](./images/gpt_val_loss.png)
 
 # Sources
 - [NanoGPT](https://github.com/karpathy/nanoGPT/tree/master/data) 
