@@ -1,2 +1,2 @@
 # language-playground
-exploring language repos
+exploring language models
