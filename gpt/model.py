@@ -1,6 +1,7 @@
 """
 Full definition of a GPT Language Model, all of it in this single file.
 References:
+0) From this Karpathy youtube video tutorial: https://www.youtube.com/watch?v=kCc8FmEb1nY
 1) the official GPT-2 TensorFlow implementation released by OpenAI:
 https://github.com/openai/gpt-2/blob/master/src/model.py
 2) huggingface/transformers PyTorch implementation:
