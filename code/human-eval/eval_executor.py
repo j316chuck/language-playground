@@ -28,7 +28,7 @@ code_generation_kwargs = {
     'canonical' : {'append_prompt' : True},
     'openai_with_solution' : {'append_prompt' : False},
     'openai_without_solution' : {'append_prompt' : False},
-    'openai_with_feedback' : {'append_prompt' : False, 'pass_in_sol' : False, 'total_trials': 3},
+    'openai_with_feedback' : {'append_prompt' : False, 'pass_in_sol' : False, 'total_trials': 20},
 }
 generation_algorithm = 'openai_with_feedback'
 generation_kwargs = code_generation_kwargs[generation_algorithm]
@@ -36,7 +36,8 @@ generation_kwargs = code_generation_kwargs[generation_algorithm]
 # Solve problems using code generation algorithm
 solutions = {}
 full_code_executions = {}
-error_cases = {}
+std_errs = {}
+std_outs = {}
 extra_outputs = {}
 pass_rate = 0
 verbose = True 
@@ -52,22 +53,26 @@ for ii, problem in enumerate(problems):
         code = solution + '\n' + checker + f'\ncheck({problem["entry_point"]})'
     if verbose:
         print(code)
-    success, stderr = execute_code_in_subprocess(code)
+    success, stdout, stderr = execute_code_in_subprocess(code)
     extra_outputs[problem_id] = extra_output
     solutions[problem_id] = solution
     full_code_executions[problem_id] = code 
-    error_cases[problem_id] = stderr
+    std_errs[problem_id] = stderr
+    std_outs[problem_id] = stdout
+    
     pass_rate += success
     print(problem_id, "success:", success)
 print(f"Success rate: {pass_rate}/{len(problems)} = {pass_rate/len(problems)*100:.2f}%")
 
 # Save the output
-def save_output(tag, solutions, error_cases, full_code_executions, pass_rate, extra_outputs):
+def save_output(tag, solutions, std_errs, std_outs, full_code_executions, pass_rate, extra_outputs):
     os.makedirs(f'output/{tag}', exist_ok=True)
     with open(f"output/{tag}/solution.json", "w") as outfile:
         json.dump(solutions, outfile)
-    with open(f'output/{tag}/error_cases.json', 'w') as outfile:
-        json.dump(error_cases, outfile)
+    with open(f'output/{tag}/std_errs.json', 'w') as outfile:
+        json.dump(std_errs, outfile)
+    with open(f'output/{tag}/std_outs.json', 'w') as outfile:
+        json.dump(std_outs, outfile)
     with open(f'output/{tag}/full_code_executions.json', 'w') as outfile:
         json.dump(full_code_executions, outfile)
     with open(f'output/{tag}/pass_rate.txt', 'w') as outfile:
@@ -85,4 +90,4 @@ tag = f"{date}-{generation_algorithm}"
 if generation_kwargs:
     tag += f"-{str(generation_kwargs)}"
 print(f"Saving output to {tag}")
-save_output(tag, solutions, error_cases, full_code_executions, pass_rate, extra_outputs)
+save_output(tag, solutions, std_errs, std_outs, full_code_executions, pass_rate, extra_outputs)

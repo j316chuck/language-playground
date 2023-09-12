@@ -84,15 +84,21 @@ def openai_with_feedback(problem, total_trials=3, pass_in_sol=False) -> Tuple[st
     num_trials = 0 
     while num_trials < total_trials:
         code =  full_response + '\n' + checker + f'\ncheck({problem["entry_point"]})'
-        success, stderr = execute_code_in_subprocess(code)
-        solutions[num_trials] = code
-    
+        success, stdout, stderr = execute_code_in_subprocess(code)
+        solutions[num_trials] = {}
+        solutions[num_trials]['code'] = code
+        solutions[num_trials]['stdout'] = stdout
+        solutions[num_trials]['stderr'] = stderr    
+
         if success:
             return full_response, solutions
         
         print("failed {}/{} trials".format(num_trials + 1, total_trials))
-        data['messages'].append({"role": "assistant", "content" : full_response})
-        data['messages'].append({"role": "user", "content": f"Your solution is incorrect. Here's the stderr {stderr}. Please try again."})
+        try:
+            data['messages'].append({"role": "assistant", "content" : response.json()["choices"][0]["message"]["content"]})
+        except Exception as e:
+            data['messages'].append({"role": "assistant", "content" : full_response})
+        data['messages'].append({"role": "user", "content": f"Your solution is incorrect. Here are the error logs from executing the extracted code: stdout {stdout} and stderr {stderr}. Please take a deep breath, think about what went wrong, and try again. Make sure to mark your answer in ```python``` codeblocks still."})
         response = requests.post(endpoint, headers=headers, json=data)
         full_response = extract_response(problem, response)
         num_trials += 1
